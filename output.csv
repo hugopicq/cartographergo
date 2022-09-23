@@ -1,11 +1,11 @@
-Name;IP;OS;OpenPorts
-DC01;192.168.230.10;;|88|636|593|464|445|389|139|135|53|3269|3268|
-SRV01;192.168.230.11;;|445|139|135|
-WORK01;;;||
-CA01;;;||
-moncomputer2;;;||
-moncomputer3;;;||
-moncomputer4;;;||
-moncomputer5;;;||
-moncomputer6;;;||
-moncomputer7;;;||
+Name;IP;OS;OpenPorts;ReadShares;Sessions;WebDAV
+DC01;192.168.230.10;;|139|135|389|53|464|445|636|593|88|3269|3268|;|IPC$|NETLOGON|SYSVOL|;|Admin Hugo|;0
+SRV01;192.168.230.11;;|80|139|135|445|;|IPC$|Shares|;||;1
+WORK01;;;||;;;
+CA01;;;||;;;
+moncomputer2;;;||;;;
+moncomputer3;;;||;;;
+moncomputer4;;;||;;;
+moncomputer5;;;||;;;
+moncomputer6;;;||;;;
+moncomputer7;;;||;;;
