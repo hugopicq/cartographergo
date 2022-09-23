@@ -1,4 +1,4 @@
-# cartographergo
+# Cartographer
 
 Tool for internal audits to generate a CSV file of all Active Directory servers with various informations.
 Currently supported: 
