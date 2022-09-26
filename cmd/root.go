@@ -7,7 +7,7 @@ import (
 
 	"github.com/hugopicq/cartographergo/cartographer"
 	"github.com/hugopicq/cartographergo/cartographer/modules"
-	"github.com/hugopicq/cartographergo/util"
+	"github.com/hugopicq/cartographergo/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -68,6 +68,7 @@ func main(cmd *cobra.Command, args []string) {
 	cartographer.AddModule(new(modules.ModuleListShares))
 	cartographer.AddModule(new(modules.SessionsModule))
 	cartographer.AddModule(new(modules.ModuleWebDAV))
+	cartographer.AddModule(new(modules.ModuleRPC))
 	cartographer.Run()
 
 	log.Println("Output result to file...")
@@ -93,7 +94,7 @@ func readWhitelist() ([]string, error) {
 		whitelist = append(whitelist, scanner.Text())
 	}
 
-	whitelist, err = util.CIDRToStrings(whitelist)
+	whitelist, err = utils.CIDRToStrings(whitelist)
 
 	return whitelist, nil
 }

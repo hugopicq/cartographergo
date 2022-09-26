@@ -2,7 +2,7 @@ package modules
 
 import (
 	"github.com/hugopicq/cartographergo/cartographer"
-	"github.com/hugopicq/cartographergo/util"
+	"github.com/hugopicq/cartographergo/utils"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -33,7 +33,7 @@ func (m *SessionsModule) Prepare(creds *cartographer.Credentials) error {
 
 	m.Users = make(map[string]string)
 	for _, entry := range entries {
-		sid := util.DecodeSID([]byte(entry.GetAttributeValue("objectSid")))
+		sid := utils.DecodeSID([]byte(entry.GetAttributeValue("objectSid")))
 		m.Users[sid.String()] = entry.GetAttributeValue("name")
 	}
 
@@ -61,5 +61,5 @@ func (m *SessionsModule) Run(ip string, hostname string, credentials *cartograph
 		}
 	}
 
-	return util.StringsToString(sessions), nil
+	return utils.StringsToString(sessions), nil
 }

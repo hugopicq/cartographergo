@@ -1,6 +1,8 @@
-package util
+package utils
 
 import (
+	"encoding/binary"
+	"encoding/hex"
 	"net"
 	"regexp"
 	"strings"
@@ -64,4 +66,27 @@ func inc(ip net.IP) {
 			break
 		}
 	}
+}
+
+func BytesToHexString(data []byte) string {
+	if len(data) == 0 {
+		return ""
+	}
+	stringdata := hex.EncodeToString(data)
+	finaldata := ""
+	for i := 0; i < len(stringdata); i += 2 {
+		finaldata = finaldata + string(stringdata[i]) + string(stringdata[i+1]) + " "
+	}
+	return strings.ToUpper(finaldata[:len(finaldata)-1])
+}
+
+func BinToString(data []byte) string {
+	uuid1 := hex.EncodeToString(binary.BigEndian.AppendUint32([]byte{}, binary.LittleEndian.Uint32(data[0:4])))
+	uuid2 := hex.EncodeToString(binary.BigEndian.AppendUint16([]byte{}, binary.LittleEndian.Uint16(data[4:6])))
+	uuid3 := hex.EncodeToString(binary.BigEndian.AppendUint16([]byte{}, binary.LittleEndian.Uint16(data[6:8])))
+	uuid4 := hex.EncodeToString(data[8:10])
+	uuid5 := hex.EncodeToString(data[10:12])
+	uuid6 := hex.EncodeToString(data[12:16])
+
+	return strings.ToUpper(uuid1 + "-" + uuid2 + "-" + uuid3 + "-" + uuid4 + "-" + uuid5 + uuid6)
 }

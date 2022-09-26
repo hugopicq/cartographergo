@@ -3,9 +3,9 @@ package modules
 import (
 	"fmt"
 	"net"
-	"strings"
 
 	"github.com/hugopicq/cartographergo/cartographer"
+	"github.com/hugopicq/cartographergo/utils"
 
 	"github.com/hirochachacha/go-smb2"
 )
@@ -75,6 +75,6 @@ func (module *ModuleListShares) Run(ip string, hostname string, creds *cartograp
 	}
 
 	//We format directly here but with the use of generics and reflect we might be able to do better in the future
-	stringresult := "|" + strings.Trim(strings.Join(strings.Split(fmt.Sprint(results), " "), "|"), "[]") + "|"
+	stringresult := utils.StringsToString(results)
 	return stringresult, nil
 }

@@ -1,11 +1,11 @@
-Name;IP;OS;OpenPorts;ReadShares;Sessions;WebDAV
-DC01;192.168.230.10;;|139|135|389|53|464|445|636|593|88|3269|3268|;|IPC$|NETLOGON|SYSVOL|;|Admin Hugo|;0
-SRV01;192.168.230.11;;|80|139|135|445|;|IPC$|Shares|;||;1
-WORK01;;;||;;;
-CA01;;;||;;;
-moncomputer2;;;||;;;
-moncomputer3;;;||;;;
-moncomputer4;;;||;;;
-moncomputer5;;;||;;;
-moncomputer6;;;||;;;
-moncomputer7;;;||;;;
+Name;IP;OS;IsDC;OpenPorts;Sessions
+DC01;192.168.230.10;Windows Server 2019 Standard Evaluation;1;|88|53|389|464|139|135|593|636|3269|3268|445|;-
+SRV01;192.168.230.11;Windows Server 2016 Standard Evaluation;0;|80|445|135|139|;-
+WORK01;;Windows 10 Enterprise Evaluation;0;||;
+CA01;;Windows Server 2019 Standard Evaluation;0;||;
+moncomputer2;;;0;||;
+moncomputer3;;;0;||;
+moncomputer4;;;0;||;
+moncomputer5;;;0;||;
+moncomputer6;;;0;||;
+moncomputer7;;;0;||;

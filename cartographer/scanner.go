@@ -89,7 +89,7 @@ func ResolveComputersIP(computersByName map[string]*Computer, batchSize uint16) 
 
 func GetComputersLDAP(cred *Credentials) []Computer {
 	filter := "(sAMAccountType=805306369)"
-	attributes := []string{"name", "dn", "operatingsystem"}
+	attributes := []string{"name", "dn", "operatingSystem", "userAccountControl"}
 	entries, err := ExecuteLDAPQuery(cred, filter, attributes, 256)
 
 	if err != nil {
@@ -98,10 +98,17 @@ func GetComputersLDAP(cred *Credentials) []Computer {
 
 	computers := make([]Computer, len(entries))
 	for c, computer := range entries {
+		isDC := false
+		uac, err := strconv.Atoi(computer.GetAttributeValue("userAccountControl"))
+		if err == nil && (uac&8192 == 8192) {
+			isDC = true
+		}
+
 		computers[c] = Computer{
 			IP:              "",
 			Name:            computer.GetAttributeValue("name"),
-			OperatingSystem: computer.GetAttributeValue("operatingsystem"),
+			OperatingSystem: computer.GetAttributeValue("operatingSystem"),
+			IsDC:            isDC,
 			OpenPorts:       []uint16{},
 			ModuleResults:   map[string]string{},
 		}
