@@ -1,0 +1,2 @@
+- Add non AD machine scan (port scan)
+- Resume a file

@@ -87,8 +87,11 @@ func ResolveComputersIP(computersByName map[string]*Computer, batchSize uint16) 
 	}
 }
 
-func GetComputersLDAP(cred *Credentials) []Computer {
-	filter := "(sAMAccountType=805306369)"
+func GetComputersLDAP(cred *Credentials, includeWorkstations bool) []Computer {
+	filter := "(&(sAMAccountType=805306369)(operatingsystem=*Server*))"
+	if includeWorkstations {
+		filter = "(sAMAccountType=805306369)"
+	}
 	attributes := []string{"name", "dn", "operatingSystem", "userAccountControl"}
 	entries, err := ExecuteLDAPQuery(cred, filter, attributes, 256)
 

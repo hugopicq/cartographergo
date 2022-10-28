@@ -25,7 +25,9 @@ type Computer struct {
 
 type Cartographer struct {
 	Credentials   Credentials
+	Blacklist	  []string
 	Whitelist     []string
+	IncludeWorkstations	bool
 	Batchsize     uint16
 	Timeout       uint
 	Computers     []Computer
@@ -53,7 +55,7 @@ type ModuleOutput struct {
 	Result string
 }
 
-func NewCartographer(domaincontroller string, domain string, user string, password string, batchsize uint16, timeout uint, whitelist []string) *Cartographer {
+func NewCartographer(domaincontroller string, domain string, user string, password string, batchsize uint16, timeout uint, whitelist []string, blacklist []string, includeWorkstations bool) *Cartographer {
 	c := new(Cartographer)
 	c.Credentials = Credentials{
 		Domain:           domain,
@@ -64,6 +66,8 @@ func NewCartographer(domaincontroller string, domain string, user string, passwo
 	c.Batchsize = batchsize
 	c.Timeout = timeout
 	c.Whitelist = whitelist
+	c.Blacklist = blacklist
+	c.IncludeWorkstations = includeWorkstations
 	return c
 }
 
@@ -75,7 +79,7 @@ func (cartographer *Cartographer) Run() {
 	log.Println("Cartographer started")
 
 	log.Println("Getting computer information from DC...")
-	cartographer.Computers = GetComputersLDAP(&cartographer.Credentials)
+	cartographer.Computers = GetComputersLDAP(&cartographer.Credentials, cartographer.IncludeWorkstations)
 
 	//Convert to Hashmap
 	computersByName := map[string]*Computer{}
@@ -86,18 +90,18 @@ func (cartographer *Cartographer) Run() {
 	log.Println("Resolving hostnames...")
 	ResolveComputersIP(computersByName, cartographer.Batchsize)
 
-	log.Println("Preparing scanning...")
+	log.Printf("Preparing scanning on %v computers...", len(cartographer.Computers))
 	//Building hashmap and list of IP to scan
 	ipToScan := []string{}
 	cartographer.ComputersByIP = make(map[string]*Computer)
 	for k, computer := range cartographer.Computers {
-		if computer.IP != "" && (len(cartographer.Whitelist) == 0 || utils.StringsContains(cartographer.Whitelist, computer.IP)) {
+		if computer.IP != "" && (len(cartographer.Whitelist) == 0 || utils.StringsContains(cartographer.Whitelist, computer.IP)) && (len(cartographer.Whitelist) == 0 || utils.StringsContains(cartographer.Blacklist, computer.IP) == false) {
 			ipToScan = append(ipToScan, computer.IP)
 			cartographer.ComputersByIP[computer.IP] = &cartographer.Computers[k]
 		}
 	}
 
-	log.Println("Starting port scan...")
+	log.Printf("Starting port scan on %v IP address...", len(ipToScan))
 	results := ScanPorts(ipToScan, TOP_1000_PORTS, cartographer.Batchsize, time.Millisecond*time.Duration(cartographer.Timeout))
 
 	log.Println("Processing results...")
@@ -211,11 +215,17 @@ func (c Computer) ToCSVLine(modules []string) []string {
 	if c.IsDC {
 		isDC = "1"
 	}
+
+	cIP = c.IP
+	if cIP == "" {
+		cIP = "-"
+	}
+
 	line := []string{c.Name, c.IP, c.OperatingSystem, isDC}
 	line = append(line, "|"+strings.Trim(strings.Join(strings.Split(fmt.Sprint(c.OpenPorts), " "), "|"), "[]")+"|")
 	for _, module := range modules {
 		element := c.ModuleResults[module]
-		if element == "" && c.IP != "" {
+		if (element == "" && c.IP != "") || c.IP == "" {
 			element = "-"
 		}
 		line = append(line, element)

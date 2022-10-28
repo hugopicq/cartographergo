@@ -7,3 +7,6 @@ Currently supported:
 - Sessions of domain administrators (works only in a shell launched with runas for now)
 - Webdav enabled
 - RPC interfaces (print spooler)
+
+USAGE : 
+.\cartographer

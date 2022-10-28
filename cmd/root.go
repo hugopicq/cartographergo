@@ -16,9 +16,11 @@ var user string
 var password string
 var domain string
 var whitelistfile string
+var blacklistfile string
 var outputfile string
 var batchsize uint16
 var timeout uint
+var includeWorkstations bool
 
 var rootCmd = &cobra.Command{
 	Use:   "cartographer",
@@ -46,7 +48,9 @@ func init() {
 	rootCmd.Flags().StringVarP(&outputfile, "outputfile", "o", "", "Output filepath")
 	rootCmd.MarkFlagRequired("outputfile")
 
+	rootCmd.Flags().BoolVarP(&includeWorkstations, "include-workstations", "i", false, "Include workstations for scans")
 	rootCmd.Flags().StringVarP(&whitelistfile, "whitelistfile", "w", "", "Whitelist IP files in IP or CIDR format")
+	rootCmd.Flags().StringVarP(&blacklistfile, "blacklistfile", "b", "", "Blacklist IP files in IP or CIDR format")
 	rootCmd.Flags().Uint16VarP(&batchsize, "batchsize", "b", 4500, "Batch size")
 	rootCmd.Flags().UintVarP(&timeout, "timeout", "t", 1500, "Timeout in milliseconds")
 
@@ -55,16 +59,25 @@ func init() {
 
 func main(cmd *cobra.Command, args []string) {
 	whitelistIP := []string{}
+	blacklistIP := []string{}
 	var err error
 	if whitelistfile != "" {
 		log.Println("Processing whitelist file...")
-		whitelistIP, err = readWhitelist()
+		whitelistIP, err = readIPList(whitelistfile)
 		if err != nil {
 			log.Fatal("Problem while reading whitelist file: ", err)
 		}
 	}
 
-	cartographer := cartographer.NewCartographer(dc, domain, user, password, batchsize, timeout, whitelistIP)
+	if blacklistfile != "" {
+		log;Println("Processing blacklist file...")
+		blacklistIP, err = readIPList(blacklistfile)
+		if err != nil {
+			log.Fatal("Problem while reading blacklist file: ", err)
+		}
+	}
+
+	cartographer := cartographer.NewCartographer(dc, domain, user, password, batchsize, timeout, whitelistIP, blacklistIP, includeWorkstations)
 	cartographer.AddModule(new(modules.ModuleListShares))
 	cartographer.AddModule(new(modules.SessionsModule))
 	cartographer.AddModule(new(modules.ModuleWebDAV))
@@ -80,21 +93,21 @@ func main(cmd *cobra.Command, args []string) {
 	log.Println("Done!")
 }
 
-func readWhitelist() ([]string, error) {
-	whitelist := []string{}
+func readIPList(file string) ([]string, error) {
+	ipList := []string{}
 
-	file, err := os.Open(whitelistfile)
+	file, err := os.Open(file)
 	if err != nil {
-		return whitelist, err
+		return ipList, err
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		whitelist = append(whitelist, scanner.Text())
+		ipList = append(ipList, scanner.Text())
 	}
 
-	whitelist, err = utils.CIDRToStrings(whitelist)
+	ipList, err = utils.CIDRToStrings(ipList)
 
-	return whitelist, nil
+	return ipList, nil
 }
