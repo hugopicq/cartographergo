@@ -1,14 +1,21 @@
 # Cartographer
-
-## Installation
-TODO
-
-## Manual
-Cartographer is a tool intended to be used for internal audits to scan hosts and generate a CSV file with all results. The core principle is to get the server list from a domain controller, resolve IP addresses and perform scans on hosts. This list can be enriched with an additional network scan for servers outside of the domain. The tool will perform a port scan on all resolved hosts and additional modules are available: 
+Cartographer is a tool intended to be used for internal audits to scan hosts and generate a CSV file with all results. The core principle is to get the server list from a domain controller, resolve IP addresses and perform scans on hosts. This avoids having to scan large IP ranges to discover servers. This list can be enriched with an additional network scan for servers outside of the domain on IP ranges. The tool will perform a port scan on all resolved hosts and additional modules for Windows servers in the domain are available: 
 - List shares exposed
 - List sessions of domain administrators (works only in a shell launched with runas for now)
-- Check if webdav is enabled
+- Check if Webdav is enabled
 - List RPC interfaces (to identify print spooler for example)
+
+## Installation
+Make sur Go is installed.
+```bash
+git clone https://github.com/hugopicq/cartographergo.git
+cd cartographergo
+go get
+go build
+```
+At this point you should have cartographergo.exe in the directory.
+
+## Manual
 
 ### Cheatsheet
 
