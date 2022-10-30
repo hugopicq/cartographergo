@@ -31,7 +31,9 @@ This command will do the same as the first one, but will also perform port scans
 
 ##### Port scan only without AD reconnaissance
 This command will simply perform a basic port scan on the provided IP range.
+```text
 .\cartographergo -a 192.168.0.0/16 --skip-domain -o output.csv
+```
 
 ##### Port scan and RPC dump of a specific server
 This command will perform a port scan on the specified IP address and dump RPC interfaces on this host.
