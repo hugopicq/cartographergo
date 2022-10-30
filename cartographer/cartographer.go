@@ -24,15 +24,15 @@ type Computer struct {
 }
 
 type Cartographer struct {
-	Credentials   Credentials
-	Blacklist	  []string
-	Whitelist     []string
-	IncludeWorkstations	bool
-	Batchsize     uint16
-	Timeout       uint
-	Computers     []Computer
-	ComputersByIP map[string]*Computer
-	Modules       []*CartographerModuleAsync
+	Credentials         Credentials
+	Blacklist           []string
+	Whitelist           []string
+	IncludeWorkstations bool
+	Batchsize           uint16
+	Timeout             uint
+	Computers           []Computer
+	ComputersByIP       map[string]*Computer
+	Modules             []*CartographerModuleAsync
 }
 
 type CartographerModuleAsync interface {
@@ -67,6 +67,8 @@ func NewCartographer(domaincontroller string, domain string, user string, passwo
 	c.Timeout = timeout
 	c.Whitelist = whitelist
 	c.Blacklist = blacklist
+	c.Computers = []Computer{}
+	c.ComputersByIP = make(map[string]*Computer)
 	c.IncludeWorkstations = includeWorkstations
 	return c
 }
@@ -87,13 +89,11 @@ func (cartographer *Cartographer) Run() {
 		computersByName[computer.Name] = &cartographer.Computers[k]
 	}
 
-	log.Println("Resolving hostnames...")
+	log.Printf("Resolving hostnames for %v computers found in AD...", len(cartographer.Computers))
 	ResolveComputersIP(computersByName, cartographer.Batchsize)
 
-	log.Printf("Preparing scanning on %v computers...", len(cartographer.Computers))
 	//Building hashmap and list of IP to scan
 	ipToScan := []string{}
-	cartographer.ComputersByIP = make(map[string]*Computer)
 	for k, computer := range cartographer.Computers {
 		if computer.IP != "" && (len(cartographer.Whitelist) == 0 || utils.StringsContains(cartographer.Whitelist, computer.IP)) && (len(cartographer.Whitelist) == 0 || utils.StringsContains(cartographer.Blacklist, computer.IP) == false) {
 			ipToScan = append(ipToScan, computer.IP)
@@ -109,18 +109,66 @@ func (cartographer *Cartographer) Run() {
 		computer := cartographer.ComputersByIP[result.IP]
 		(*computer).OpenPorts = append((*computer).OpenPorts, result.Port)
 	}
+}
 
+func (cartographer *Cartographer) PrepareModules() {
 	if len(cartographer.Modules) > 0 {
 		for _, module := range cartographer.Modules {
 			log.Println("Preparing module", (*module).GetName())
 			(*module).Prepare(&cartographer.Credentials)
+		}
+	} else {
+		log.Println("No module to prepare")
+	}
+}
 
+func (cartographer *Cartographer) RunModules() {
+	if len(cartographer.Modules) > 0 {
+		for _, module := range cartographer.Modules {
 			log.Println("Running module", (*module).GetName())
 			cartographer.RunModuleAsync(module)
 		}
 	} else {
 		log.Println("No module to run")
 	}
+}
+
+func (cartographer *Cartographer) RunAdditionalScan(IPList []string) {
+	log.Printf("Processing %v additional IP addresses for port scan...", len(IPList))
+	finalList := make([]string, 0, len(IPList))
+	for _, IP := range IPList {
+		//Check if in whitelist or not in blacklist if defined
+		if IP != "" && (len(cartographer.Whitelist) == 0 || utils.StringsContains(cartographer.Whitelist, IP)) && (len(cartographer.Whitelist) == 0 || utils.StringsContains(cartographer.Blacklist, IP) == false) {
+			//Check if not already scanned in the domain
+			if _, ok := cartographer.ComputersByIP[IP]; ok == false {
+				finalList = append(finalList, IP)
+				computer := Computer{
+					IP:              IP,
+					Name:            "-",
+					OperatingSystem: "-",
+					IsDC:            false,
+					OpenPorts:       []uint16{},
+					ModuleResults:   map[string]string{},
+				}
+				(*cartographer).Computers = append((*cartographer).Computers, computer)
+			}
+		}
+	}
+
+	for k, computer := range (*cartographer).Computers {
+		(*cartographer).ComputersByIP[computer.IP] = &(*cartographer).Computers[k]
+	}
+
+	log.Printf("Starting port scan on %v IP address...", len(finalList))
+	results := ScanPorts(finalList, TOP_1000_PORTS, cartographer.Batchsize, time.Millisecond*time.Duration(cartographer.Timeout))
+
+	log.Println("Processing results...")
+	for _, result := range results {
+		computer := cartographer.ComputersByIP[result.IP]
+		(*computer).OpenPorts = append((*computer).OpenPorts, result.Port)
+	}
+
+	//TODO: clean results
 }
 
 func (cartographer *Cartographer) RunModuleAsync(cartoModule *CartographerModuleAsync) {
@@ -131,7 +179,7 @@ func (cartographer *Cartographer) RunModuleAsync(cartoModule *CartographerModule
 	for ip, computer := range cartographer.ComputersByIP {
 		toAdd := true
 		for _, port := range ports {
-			if utils.UInt16Contains(computer.OpenPorts, uint16(port)) == false {
+			if utils.UInt16Contains(computer.OpenPorts, uint16(port)) == false || computer.ModuleResults[moduleName] != "" {
 				toAdd = false
 			}
 		}
@@ -202,6 +250,9 @@ func (cartographer *Cartographer) SaveResults(outputfile string) error {
 	}
 
 	for _, computer := range cartographer.Computers {
+		if computer.Name == "-" && len(computer.OpenPorts) == 0 {
+			continue
+		}
 		if err := w.Write(computer.ToCSVLine(headers[len(base_headers):])); err != nil {
 			return err
 		}
@@ -216,7 +267,7 @@ func (c Computer) ToCSVLine(modules []string) []string {
 		isDC = "1"
 	}
 
-	cIP = c.IP
+	cIP := c.IP
 	if cIP == "" {
 		cIP = "-"
 	}
