@@ -106,23 +106,34 @@ func main(cmd *cobra.Command, args []string) {
 	cartographer := cartographer.NewCartographer(dc, domain, user, password, batchsize, timeout, whitelistIP, blacklistIP, includeWorkstations)
 
 	cartoModulesArray := strings.Split(cartoModules, ",")
+
 	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "shares") {
-		cartographer.AddModule(new(modules.ModuleListShares))
+		cartographer.AddModule(new(modules.ModuleListShares), true)
+	} else {
+		cartographer.AddModule(new(modules.ModuleListShares), false)
 	}
 
 	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "adminsessions") {
-		cartographer.AddModule(new(modules.SessionsModule))
+		cartographer.AddModule(new(modules.SessionsModule), true)
+	} else {
+		cartographer.AddModule(new(modules.SessionsModule), false)
 	}
 
 	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "webdav") {
-		cartographer.AddModule(new(modules.ModuleWebDAV))
+		cartographer.AddModule(new(modules.ModuleWebDAV), true)
+	} else {
+		cartographer.AddModule(new(modules.ModuleWebDAV), false)
 	}
 
 	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "rpc") {
-		cartographer.AddModule(new(modules.ModuleRPC))
+		cartographer.AddModule(new(modules.ModuleRPC), true)
+	} else {
+		cartographer.AddModule(new(modules.ModuleRPC), false)
 	}
 
-	cartographer.PrepareModules()
+	if !skipAD || runModulesAdditional {
+		cartographer.PrepareModules()
+	}
 
 	if !skipAD {
 		cartographer.Run()

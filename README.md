@@ -6,7 +6,7 @@ Cartographer is a tool intended to be used for internal audits to scan hosts and
 - List RPC interfaces (to identify print spooler for example)
 
 ## Installation
-Make sur Go is installed.
+Make sure Go is installed.
 ```bash
 git clone https://github.com/hugopicq/cartographergo.git
 cd cartographergo

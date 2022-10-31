@@ -10,7 +10,15 @@ import (
 	"github.com/hirochachacha/go-smb2"
 )
 
-type ModuleListShares struct{}
+type ModuleListShares struct{ enabled bool }
+
+func (module *ModuleListShares) IsEnabled() bool {
+	return module.enabled
+}
+
+func (module *ModuleListShares) Enable() {
+	module.enabled = true
+}
 
 func (module *ModuleListShares) GetName() string {
 	return "ListShares"

@@ -6,7 +6,15 @@ import (
 	"github.com/hugopicq/cartographergo/utils"
 )
 
-type ModuleRPC struct{}
+type ModuleRPC struct{ enabled bool }
+
+func (module *ModuleRPC) IsEnabled() bool {
+	return module.enabled
+}
+
+func (module *ModuleRPC) Enable() {
+	module.enabled = true
+}
 
 func (module *ModuleRPC) GetName() string {
 	return "RPC"

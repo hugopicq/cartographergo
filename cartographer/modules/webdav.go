@@ -8,7 +8,15 @@ import (
 	"github.com/hugopicq/cartographergo/cartographer"
 )
 
-type ModuleWebDAV struct{}
+type ModuleWebDAV struct{ enabled bool }
+
+func (module *ModuleWebDAV) IsEnabled() bool {
+	return module.enabled
+}
+
+func (module *ModuleWebDAV) Enable() {
+	module.enabled = true
+}
 
 func (module *ModuleWebDAV) GetName() string {
 	return "WebDAV"

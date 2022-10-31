@@ -7,7 +7,16 @@ import (
 )
 
 type SessionsModule struct {
-	Users map[string]string
+	Users   map[string]string
+	enabled bool
+}
+
+func (module *SessionsModule) IsEnabled() bool {
+	return module.enabled
+}
+
+func (module *SessionsModule) Enable() {
+	module.enabled = true
 }
 
 func (m *SessionsModule) GetPortFilter() []uint16 {

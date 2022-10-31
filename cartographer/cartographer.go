@@ -41,6 +41,8 @@ type CartographerModuleAsync interface {
 	GetPortFilter() []uint16
 	GetName() string
 	GetColumn() string
+	IsEnabled() bool
+	Enable()
 }
 
 type Credentials struct {
@@ -73,7 +75,10 @@ func NewCartographer(domaincontroller string, domain string, user string, passwo
 	return c
 }
 
-func (cartographer *Cartographer) AddModule(module CartographerModuleAsync) {
+func (cartographer *Cartographer) AddModule(module CartographerModuleAsync, enabled bool) {
+	if enabled {
+		module.Enable()
+	}
 	cartographer.Modules = append(cartographer.Modules, &module)
 }
 
@@ -112,24 +117,20 @@ func (cartographer *Cartographer) Run() {
 }
 
 func (cartographer *Cartographer) PrepareModules() {
-	if len(cartographer.Modules) > 0 {
-		for _, module := range cartographer.Modules {
+	for _, module := range cartographer.Modules {
+		if (*module).IsEnabled() {
 			log.Println("Preparing module", (*module).GetName())
 			(*module).Prepare(&cartographer.Credentials)
 		}
-	} else {
-		log.Println("No module to prepare")
 	}
 }
 
 func (cartographer *Cartographer) RunModules() {
-	if len(cartographer.Modules) > 0 {
-		for _, module := range cartographer.Modules {
+	for _, module := range cartographer.Modules {
+		if (*module).IsEnabled() {
 			log.Println("Running module", (*module).GetName())
 			cartographer.RunModuleAsync(module)
 		}
-	} else {
-		log.Println("No module to run")
 	}
 }
 
@@ -272,11 +273,11 @@ func (c Computer) ToCSVLine(modules []string) []string {
 		cIP = "-"
 	}
 
-	line := []string{c.Name, c.IP, c.OperatingSystem, isDC}
+	line := []string{c.Name, cIP, c.OperatingSystem, isDC}
 	line = append(line, "|"+strings.Trim(strings.Join(strings.Split(fmt.Sprint(c.OpenPorts), " "), "|"), "[]")+"|")
 	for _, module := range modules {
-		element := c.ModuleResults[module]
-		if (element == "" && c.IP != "") || c.IP == "" {
+		element, ok := c.ModuleResults[module]
+		if ok == false || (element == "" && c.IP != "") || c.IP == "" {
 			element = "-"
 		}
 		line = append(line, element)
