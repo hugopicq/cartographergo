@@ -19,6 +19,7 @@ type Computer struct {
 	IP              string
 	OperatingSystem string
 	IsDC            bool
+	LAPS            bool
 	OpenPorts       []uint16
 	ModuleResults   map[string]string
 }
@@ -148,6 +149,7 @@ func (cartographer *Cartographer) RunAdditionalScan(IPList []string) {
 					Name:            "-",
 					OperatingSystem: "-",
 					IsDC:            false,
+					LAPS:            false,
 					OpenPorts:       []uint16{},
 					ModuleResults:   map[string]string{},
 				}
@@ -229,7 +231,7 @@ func (cartographer *Cartographer) RunModuleAsync(cartoModule *CartographerModule
 }
 
 func (cartographer *Cartographer) SaveResults(outputfile string) error {
-	base_headers := []string{"Name", "IP", "OS", "IsDC", "OpenPorts"}
+	base_headers := []string{"Name", "IP", "OS", "IsDC", "LAPS", "OpenPorts"}
 	headers := make([]string, 0, len(base_headers)+len(cartographer.Modules))
 	headers = append(headers, base_headers...)
 	for _, module := range cartographer.Modules {
@@ -273,7 +275,12 @@ func (c Computer) ToCSVLine(modules []string) []string {
 		cIP = "-"
 	}
 
-	line := []string{c.Name, cIP, c.OperatingSystem, isDC}
+	laps := "0"
+	if c.LAPS {
+		laps = "1"
+	}
+
+	line := []string{c.Name, cIP, c.OperatingSystem, isDC, laps}
 	line = append(line, "|"+strings.Trim(strings.Join(strings.Split(fmt.Sprint(c.OpenPorts), " "), "|"), "[]")+"|")
 	for _, module := range modules {
 		element, ok := c.ModuleResults[module]

@@ -92,7 +92,7 @@ func GetComputersLDAP(cred *Credentials, includeWorkstations bool) []Computer {
 	if includeWorkstations {
 		filter = "(sAMAccountType=805306369)"
 	}
-	attributes := []string{"name", "dn", "operatingSystem", "userAccountControl"}
+	attributes := []string{"name", "dn", "operatingSystem", "userAccountControl", "ms-MCS-AdmPwd"}
 	entries, err := ExecuteLDAPQuery(cred, filter, attributes, 256)
 
 	if err != nil {
@@ -107,11 +107,14 @@ func GetComputersLDAP(cred *Credentials, includeWorkstations bool) []Computer {
 			isDC = true
 		}
 
+		laps := computer.GetAttributeValue("ms-MCS-AdmPwd") != ""
+
 		computers[c] = Computer{
 			IP:              "",
 			Name:            computer.GetAttributeValue("name"),
 			OperatingSystem: computer.GetAttributeValue("operatingSystem"),
 			IsDC:            isDC,
+			LAPS:            laps,
 			OpenPorts:       []uint16{},
 			ModuleResults:   map[string]string{},
 		}
