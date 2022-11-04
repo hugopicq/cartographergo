@@ -8,7 +8,14 @@ import (
 
 type SessionsModule struct {
 	Users   map[string]string
+	LDAPs   bool
 	enabled bool
+}
+
+func NewSessionsModule(ldaps bool) *SessionsModule {
+	module := new(SessionsModule)
+	module.LDAPs = ldaps
+	return module
 }
 
 func (module *SessionsModule) IsEnabled() bool {
@@ -35,7 +42,7 @@ func (m *SessionsModule) Prepare(creds *cartographer.Credentials) error {
 	//Get domain admins
 	filter := "(&(objectClass=user)(objectCategory=Person)(adminCount=1))"
 	attributes := []string{"objectSid", "name"}
-	entries, err := cartographer.ExecuteLDAPQuery(creds, filter, attributes, 256)
+	entries, err := cartographer.ExecuteLDAPQuery(creds, filter, attributes, 256, m.LDAPs)
 	if err != nil {
 		return err
 	}

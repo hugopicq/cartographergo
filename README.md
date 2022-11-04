@@ -4,6 +4,7 @@ Cartographer is a tool intended to be used for internal audits to scan hosts and
 - List sessions of domain administrators (works only in a shell launched with runas for now)
 - Check if Webdav is enabled
 - List RPC interfaces (to identify print spooler for example)
+- Check if FTP can be accessed as anonymous
 
 ## Installation
 Make sure Go is installed.
@@ -62,7 +63,8 @@ Flags:
   -s, --domaincontroller string   IP of Domain Controller
   -h, --help                      help for cartographer
       --include-workstations      Include workstations for scans, by default only computers matching *Server* in the OS will be scanned
-  -m, --modules string            Modules to run on resolved domain computers separated by commas (all by default). Available: all, adminsessions, webdav, shares, rpc (default "all")
+      --ldaps                     Use LDAPS to communicate with DC (false by default)
+  -m, --modules string            Modules to run on resolved domain computers separated by commas (all by default). Available: all, adminsessions, webdav, shares, rpc, ftpanon (default "all")
   -o, --outputfile string         Output filepath
   -p, --password string           Active Directory Password
       --run-modules-additional    Run chosen modules on additional IPs

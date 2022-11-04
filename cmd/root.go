@@ -59,7 +59,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&whitelistfile, "whitelist-file", "", "", "Whitelist IP files in IP or CIDR format (1 line per CIDR)")
 	rootCmd.Flags().StringVarP(&blacklistfile, "blacklist-file", "", "", "Blacklist IP files in IP or CIDR format (1 line per CIDR)")
 	rootCmd.Flags().StringVarP(&additionalIPString, "additional-IP", "a", "", "Additional IP to scan. They must be in CIDR format separated by commas")
-	rootCmd.Flags().StringVarP(&cartoModules, "modules", "m", "all", "Modules to run on resolved domain computers separated by commas (all by default). Available: all, adminsessions, webdav, shares, rpc")
+	rootCmd.Flags().StringVarP(&cartoModules, "modules", "m", "all", "Modules to run on resolved domain computers separated by commas (all by default). Available: all, adminsessions, webdav, shares, rpc, ftpanon")
 	rootCmd.Flags().BoolVarP(&runModulesAdditional, "run-modules-additional", "", false, "Run chosen modules on additional IPs")
 	rootCmd.Flags().BoolVarP(&ldaps, "ldaps", "", false, "Use LDAPS to communicate with DC (false by default)")
 	rootCmd.Flags().Uint16VarP(&batchsize, "batchsize", "b", 4500, "Batch size")
@@ -115,10 +115,16 @@ func main(cmd *cobra.Command, args []string) {
 		cartographer.AddModule(new(modules.ModuleListShares), false)
 	}
 
-	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "adminsessions") {
-		cartographer.AddModule(new(modules.SessionsModule), true)
+	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "ftpanon") {
+		cartographer.AddModule(new(modules.ModuleFTPAnon), true)
 	} else {
-		cartographer.AddModule(new(modules.SessionsModule), false)
+		cartographer.AddModule(new(modules.ModuleFTPAnon), false)
+	}
+
+	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "adminsessions") {
+		cartographer.AddModule(modules.NewSessionsModule(ldaps), true)
+	} else {
+		cartographer.AddModule(modules.NewSessionsModule(ldaps), false)
 	}
 
 	if utils.StringsContains(cartoModulesArray, "all") || utils.StringsContains(cartoModulesArray, "webdav") {
