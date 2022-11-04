@@ -26,6 +26,7 @@ var additionalIPString string
 var skipAD bool
 var cartoModules string
 var runModulesAdditional bool
+var ldaps bool
 
 var rootCmd = &cobra.Command{
 	Use:   "cartographer",
@@ -60,6 +61,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&additionalIPString, "additional-IP", "a", "", "Additional IP to scan. They must be in CIDR format separated by commas")
 	rootCmd.Flags().StringVarP(&cartoModules, "modules", "m", "all", "Modules to run on resolved domain computers separated by commas (all by default). Available: all, adminsessions, webdav, shares, rpc")
 	rootCmd.Flags().BoolVarP(&runModulesAdditional, "run-modules-additional", "", false, "Run chosen modules on additional IPs")
+	rootCmd.Flags().BoolVarP(&ldaps, "ldaps", "", false, "Use LDAPS to communicate with DC (false by default)")
 	rootCmd.Flags().Uint16VarP(&batchsize, "batchsize", "b", 4500, "Batch size")
 	rootCmd.Flags().UintVarP(&timeout, "timeout", "t", 1500, "Timeout in milliseconds")
 
@@ -103,7 +105,7 @@ func main(cmd *cobra.Command, args []string) {
 		log.Fatal("If modules are run on additional IP addresses, user, password, domain and dc arguments should be provided")
 	}
 
-	cartographer := cartographer.NewCartographer(dc, domain, user, password, batchsize, timeout, whitelistIP, blacklistIP, includeWorkstations)
+	cartographer := cartographer.NewCartographer(dc, domain, user, password, batchsize, timeout, whitelistIP, blacklistIP, includeWorkstations, ldaps)
 
 	cartoModulesArray := strings.Split(cartoModules, ",")
 

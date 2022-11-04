@@ -34,6 +34,7 @@ type Cartographer struct {
 	Computers           []Computer
 	ComputersByIP       map[string]*Computer
 	Modules             []*CartographerModuleAsync
+	LDAPs               bool
 }
 
 type CartographerModuleAsync interface {
@@ -58,7 +59,7 @@ type ModuleOutput struct {
 	Result string
 }
 
-func NewCartographer(domaincontroller string, domain string, user string, password string, batchsize uint16, timeout uint, whitelist []string, blacklist []string, includeWorkstations bool) *Cartographer {
+func NewCartographer(domaincontroller string, domain string, user string, password string, batchsize uint16, timeout uint, whitelist []string, blacklist []string, includeWorkstations bool, ldaps bool) *Cartographer {
 	c := new(Cartographer)
 	c.Credentials = Credentials{
 		Domain:           domain,
@@ -73,6 +74,7 @@ func NewCartographer(domaincontroller string, domain string, user string, passwo
 	c.Computers = []Computer{}
 	c.ComputersByIP = make(map[string]*Computer)
 	c.IncludeWorkstations = includeWorkstations
+	c.LDAPs = ldaps
 	return c
 }
 
@@ -87,7 +89,7 @@ func (cartographer *Cartographer) Run() {
 	log.Println("Cartographer started")
 
 	log.Println("Getting computer information from DC...")
-	cartographer.Computers = GetComputersLDAP(&cartographer.Credentials, cartographer.IncludeWorkstations)
+	cartographer.Computers = GetComputersLDAP(&cartographer.Credentials, cartographer.IncludeWorkstations, cartographer.LDAPs)
 
 	//Convert to Hashmap
 	computersByName := map[string]*Computer{}
