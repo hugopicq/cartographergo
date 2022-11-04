@@ -30,11 +30,15 @@ func (module *ModuleFTPAnon) GetPortFilter() []uint16 {
 	return []uint16{21}
 }
 
+func (module *ModuleFTPAnon) Filter(computer *cartographer.Computer) bool {
+	return true
+}
+
 func (module *ModuleFTPAnon) Prepare(creds *cartographer.Credentials) error {
 	return nil
 }
 
-func (module *ModuleFTPAnon) Run(ip string, hostname string, creds *cartographer.Credentials) (string, error) {
+func (module *ModuleFTPAnon) Run(ip string, hostname string, creds *cartographer.Credentials, timeout time.Duration) (string, error) {
 
 	c, err := ftp.Dial(fmt.Sprintf("%v:21", ip), ftp.DialWithTimeout(2*time.Second))
 	if err != nil {

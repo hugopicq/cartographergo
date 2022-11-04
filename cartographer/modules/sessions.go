@@ -1,6 +1,8 @@
 package modules
 
 import (
+	"time"
+
 	"github.com/hugopicq/cartographergo/cartographer"
 	"github.com/hugopicq/cartographergo/utils"
 	"golang.org/x/sys/windows/registry"
@@ -38,6 +40,10 @@ func (m *SessionsModule) GetColumn() string {
 	return "Sessions"
 }
 
+func (module *SessionsModule) Filter(computer *cartographer.Computer) bool {
+	return true
+}
+
 func (m *SessionsModule) Prepare(creds *cartographer.Credentials) error {
 	//Get domain admins
 	filter := "(&(objectClass=user)(objectCategory=Person)(adminCount=1))"
@@ -56,7 +62,7 @@ func (m *SessionsModule) Prepare(creds *cartographer.Credentials) error {
 	return nil
 }
 
-func (m *SessionsModule) Run(ip string, hostname string, credentials *cartographer.Credentials) (string, error) {
+func (m *SessionsModule) Run(ip string, hostname string, credentials *cartographer.Credentials, timeout time.Duration) (string, error) {
 	k, err := registry.OpenRemoteKey(ip, registry.USERS)
 	if err != nil {
 		return "", err

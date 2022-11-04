@@ -3,6 +3,7 @@ package modules
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/hirochachacha/go-smb2"
 	"github.com/hugopicq/cartographergo/cartographer"
@@ -34,7 +35,11 @@ func (module *ModuleWebDAV) Prepare(creds *cartographer.Credentials) error {
 	return nil
 }
 
-func (module *ModuleWebDAV) Run(ip string, hostname string, creds *cartographer.Credentials) (string, error) {
+func (module *ModuleWebDAV) Filter(computer *cartographer.Computer) bool {
+	return true
+}
+
+func (module *ModuleWebDAV) Run(ip string, hostname string, creds *cartographer.Credentials, timeout time.Duration) (string, error) {
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%v:445", ip))
 	if err != nil {

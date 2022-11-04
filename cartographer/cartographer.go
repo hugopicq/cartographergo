@@ -39,8 +39,9 @@ type Cartographer struct {
 
 type CartographerModuleAsync interface {
 	Prepare(*Credentials) error
-	Run(ip string, hostname string, credentials *Credentials) (string, error)
+	Run(ip string, hostname string, credentials *Credentials, timeout time.Duration) (string, error)
 	GetPortFilter() []uint16
+	Filter(computer *Computer) bool
 	GetName() string
 	GetColumn() string
 	IsEnabled() bool
@@ -186,6 +187,8 @@ func (cartographer *Cartographer) RunModuleAsync(cartoModule *CartographerModule
 		for _, port := range ports {
 			if utils.UInt16Contains(computer.OpenPorts, uint16(port)) == false || computer.ModuleResults[moduleName] != "" {
 				toAdd = false
+			} else if (*cartoModule).Filter(computer) == false {
+				toAdd = false
 			}
 		}
 		if toAdd {
@@ -207,7 +210,7 @@ func (cartographer *Cartographer) RunModuleAsync(cartoModule *CartographerModule
 			ip := hostsToScan[totalProcessed]
 			wg.Add(1)
 			go func(ch chan ModuleOutput, ip string, hostname string, creds *Credentials) {
-				result, _ := (*cartoModule).Run(ip, hostname, creds)
+				result, _ := (*cartoModule).Run(ip, hostname, creds, time.Millisecond*time.Duration(cartographer.Timeout))
 				//TODO : Handle error and "" case ?
 				ch <- ModuleOutput{IP: ip, Result: result}
 				wg.Done()

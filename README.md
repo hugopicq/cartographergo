@@ -64,7 +64,7 @@ Flags:
   -h, --help                      help for cartographer
       --include-workstations      Include workstations for scans, by default only computers matching *Server* in the OS will be scanned
       --ldaps                     Use LDAPS to communicate with DC (false by default)
-  -m, --modules string            Modules to run on resolved domain computers separated by commas (all by default). Available: all, adminsessions, webdav, shares, rpc, ftpanon (default "all")
+  -m, --modules string            Modules to run on resolved domain computers separated by commas (all by default). Available: all, adminsessions, webdav, shares, rpc, ftpanon, ms17 (not in all because experimental) (default "all")
   -o, --outputfile string         Output filepath
   -p, --password string           Active Directory Password
       --run-modules-additional    Run chosen modules on additional IPs

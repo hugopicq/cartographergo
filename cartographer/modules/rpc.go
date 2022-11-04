@@ -1,6 +1,8 @@
 package modules
 
 import (
+	"time"
+
 	"github.com/hugopicq/cartographergo/cartographer"
 	"github.com/hugopicq/cartographergo/dcerpc"
 	"github.com/hugopicq/cartographergo/utils"
@@ -32,7 +34,11 @@ func (module *ModuleRPC) Prepare(creds *cartographer.Credentials) error {
 	return nil
 }
 
-func (module *ModuleRPC) Run(ip string, hostname string, creds *cartographer.Credentials) (string, error) {
+func (module *ModuleRPC) Filter(computer *cartographer.Computer) bool {
+	return true
+}
+
+func (module *ModuleRPC) Run(ip string, hostname string, creds *cartographer.Credentials, timeout time.Duration) (string, error) {
 	protocols, err := dcerpc.Dump(ip, creds.User, creds.Password, creds.Domain)
 	if err != nil {
 		return "", err
