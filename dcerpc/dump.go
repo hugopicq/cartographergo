@@ -57,7 +57,10 @@ func HeptLookup(dce *DCE) ([]*EptEntry, error) {
 		request.VersOption = 1
 		request.EntryHandle = entryHandle
 		request.MaxEnts = 500
-		resp := dce.Request(request)
+		resp, error := dce.Request(request)
+		if error != nil {
+			return nil, error
+		}
 
 		entries = append(entries, resp.Entries...)
 

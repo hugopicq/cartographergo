@@ -1,6 +1,8 @@
 package dcerpc
 
 import (
+	"errors"
+
 	"github.com/hugopicq/cartographergo/utils"
 )
 
@@ -50,18 +52,21 @@ func (dce *DCE) Bind(ifaceUUID []byte) error {
 	return nil
 }
 
-func (dce *DCE) Request(request *EptLookup) *EptLookupResponse {
+func (dce *DCE) Request(request *EptLookup) (*EptLookupResponse, error) {
 	call := new(DCERPCRawCall)
 	call.Opnum = uint16(request.Opnum)
 	call.PduData = request.GetData()
 	dce.Send(call)
 	resp, err := dce.Receive()
 	if err != nil {
-
+		return nil, errors.New("Error while receiving")
 	}
 
-	response := NewEptLookupResponse(resp)
-	return response
+	response, error := NewEptLookupResponse(resp)
+	if error != nil {
+		return nil, error
+	}
+	return response, nil
 }
 
 func (dce *DCE) Send(call *DCERPCRawCall) error {

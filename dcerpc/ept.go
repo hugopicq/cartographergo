@@ -2,6 +2,7 @@ package dcerpc
 
 import (
 	"encoding/binary"
+	"errors"
 
 	"github.com/hugopicq/cartographergo/utils"
 )
@@ -86,9 +87,12 @@ type EptLookupHandle struct {
 	HandleUUID       []byte
 }
 
-func NewEptLookupResponse(data []byte) *EptLookupResponse {
+func NewEptLookupResponse(data []byte) (*EptLookupResponse, error) {
 	response := new(EptLookupResponse)
 	response.EntryHandle = new(EptLookupHandle)
+	if len(data) == 0 {
+		return nil, errors.New("Length of data should not be null")
+	}
 	response.EntryHandle.HandleAttributes = binary.LittleEndian.Uint32(data[0:4])
 	response.EntryHandle.HandleUUID = data[4:20]
 
@@ -139,5 +143,5 @@ func NewEptLookupResponse(data []byte) *EptLookupResponse {
 	response.Entries = array
 	response.Status = binary.LittleEndian.Uint32(data[offset : offset+4])
 
-	return response
+	return response, nil
 }
