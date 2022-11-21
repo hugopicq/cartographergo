@@ -99,7 +99,7 @@ func (cartographer *Cartographer) Run() {
 	}
 
 	log.Printf("Resolving hostnames for %v computers found in AD...", len(cartographer.Computers))
-	ResolveComputersIP(computersByName, cartographer.Batchsize)
+	ResolveComputersIP(computersByName, cartographer.Batchsize, cartographer.Credentials.Domain)
 
 	//Building hashmap and list of IP to scan
 	ipToScan := []string{}

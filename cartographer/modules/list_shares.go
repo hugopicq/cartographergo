@@ -47,7 +47,7 @@ func (module *ModuleListShares) Run(ip string, hostname string, creds *cartograp
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%v:445", ip))
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer conn.Close()
 

@@ -43,7 +43,7 @@ func (module *ModuleWebDAV) Run(ip string, hostname string, creds *cartographer.
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%v:445", ip))
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer conn.Close()
 

@@ -1,10 +1,12 @@
 package cartographer
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -34,7 +36,7 @@ func buildSockets(addresses []string, ports []uint16) []Socket {
 	return sockets
 }
 
-func ResolveComputersIP(computersByName map[string]*Computer, batchSize uint16) {
+func ResolveComputersIP(computersByName map[string]*Computer, batchSize uint16, domain string) {
 	totalProcessed := 0
 	wg := sync.WaitGroup{}
 
@@ -53,7 +55,7 @@ func ResolveComputersIP(computersByName map[string]*Computer, batchSize uint16) 
 			}
 			wg.Add(1)
 			go func(ch chan<- HostNameResult, hostname string) {
-				result := resolveComputerName(hostname)
+				result := resolveComputerName(hostname, domain)
 				ch <- result
 				wg.Done()
 			}(ch, hostnames[totalProcessed])
@@ -176,9 +178,14 @@ func scanPort(address string, port uint16, timeout time.Duration) bool {
 	return true
 }
 
-func resolveComputerName(hostname string) HostNameResult {
+func resolveComputerName(hostname string, domain string) HostNameResult {
 	//TODO : Handle multiple addresses case
-	addr, err := net.LookupIP(hostname)
+	hostnameDomain := hostname
+	if strings.HasSuffix(strings.ToLower(hostnameDomain), strings.ToLower(domain)) == false {
+		hostnameDomain = fmt.Sprintf("%v.%v", hostname, domain)
+	}
+
+	addr, err := net.LookupIP(hostnameDomain)
 	if err == nil && len(addr) > 0 {
 		return HostNameResult{Name: hostname, IP: addr}
 	}

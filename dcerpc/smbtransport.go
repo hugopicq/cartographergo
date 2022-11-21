@@ -72,7 +72,7 @@ func (transport *SMBTransport) Connect() error {
 
 	transport.SMBFile, err = transport.SMBShare.Create(filename)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	return nil
