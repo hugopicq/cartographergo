@@ -155,11 +155,11 @@ $i_carto = 0
 $dataToAdd = @()
 
 foreach($nmapObject in $nmapData){
-    while($nmapObject.$IPHeader -gt $existingData[$i_carto].$IPHeader -and $i_carto -lt $existingData.Length) {
+    while($i_carto -lt $existingData.Length -and $nmapObject.$IPHeader -gt $existingData[$i_carto].$IPHeader) {
         $i_carto += 1
     }
     #Here we either have Sames IPs, or Carto.IP > Nmap.IP (meaning it's a new IP), or we saw all carto data
-    if($nmapObject.$IPHeader -eq $existingData[$i_carto].$IPHeader) {
+    if($i_carto -lt $existingData.Length -and $nmapObject.$IPHeader -eq $existingData[$i_carto].$IPHeader) {
         #The IP already exists and we consider that cartographer is right
         continue
     } else {
